@@ -1,20 +1,19 @@
 use bevy::prelude::*;
-use ecsmos::systems::*;
+use ecsmos::{systems::*, plugins::route_pathing::RoutePathingPlugin};
 
 fn main() {
     App::new()
 
     .add_plugins(DefaultPlugins)
-    .configure_set(Update, Stage::Rendering)
-    .configure_set(Update, Stage::Simulation.after(Stage::Rendering))
+    .add_plugins(RoutePathingPlugin)
+    
+    .configure_set(Update, Stage::Compute)
+    .configure_set(Update, Stage::Movement.after(Stage::Compute))
+    .configure_set(Update, Stage::Rendering.after(Stage::Movement))
 
 
-    .add_systems(Startup, (setup_camera, add_resources, add_vehicles, compute_leaders).chain())
+    .add_systems(Startup, (setup_camera, add_vehicles).chain())
 
-    .add_systems(Update, car_following.after(transform_update_system))
-    .add_systems(Update, route_movement_system)
-    .add_systems(Update, transform_update_system.after(route_movement_system))
-
-    .add_systems(Update, draw_paths)
+    // .add_systems(Update, car_following.after(transform_update_system))
     .run();
 }
