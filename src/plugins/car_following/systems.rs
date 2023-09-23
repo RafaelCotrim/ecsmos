@@ -2,11 +2,11 @@ use bevy::prelude::*;
 
 use crate::{plugins::route_pathing::{resources::RoutingTable, components::*}, components::Vehicle};
 
-use super::components::Leader;
+use super::components::{Leader, KraussVehicle};
 
 pub fn car_following(
     pathing: Res<RoutingTable>,
-    mut cars: Query<(&mut PathVelocity, &Vehicle, &PathPosition)>,
+    mut cars: Query<(&mut PathVelocity, &KraussVehicle, &PathPosition), With<Vehicle>>,
     followers: Query<(Entity, &Leader), With<Vehicle>>
 ) {
     for (follower, Leader(leader)) in &followers {

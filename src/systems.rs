@@ -1,7 +1,6 @@
 use bevy::prelude::*;
-use itertools::Itertools;
 
-use crate::{components::*, plugins::{route_pathing::{components::{PathPosition, Route, PathVelocity}, resources::RoutingTable}, car_following::components::Leader}};
+use crate::{components::*, plugins::{route_pathing::components::{PathPosition, Route, PathVelocity}, car_following::components::{Leader, KraussVehicle}}};
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum Stage {
@@ -19,7 +18,8 @@ pub fn setup_camera(mut commands: Commands) {
 pub fn add_vehicles(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let leader = commands.spawn((
-        Vehicle::default(),
+        Vehicle,
+        KraussVehicle::default(),
         PathPosition {
             distance: 500.,
             path: 0,
@@ -35,7 +35,8 @@ pub fn add_vehicles(mut commands: Commands, asset_server: Res<AssetServer>) {
     )).id();
 
      commands.spawn((
-        Vehicle::default(),
+        Vehicle,
+        KraussVehicle::default(),
         PathPosition {
             distance: 0.,
             path: 0,
