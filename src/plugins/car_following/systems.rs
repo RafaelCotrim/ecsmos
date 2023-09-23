@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use itertools::Itertools;
 
 use crate::{plugins::route_pathing::{resources::RoutingTable, components::*}, components::Vehicle};
 
@@ -47,4 +48,27 @@ pub fn car_following(
         .iter()
         .fold(f32::INFINITY, |a, &b| a.min(b));
     }
+}
+
+
+pub fn compute_leaders_on_add(
+    mut commands: Commands,
+    query: Query<(Entity, &PathPosition), (With<Vehicle>, Added<KraussVehicle>)>,
+) {
+    let groups = query.iter().group_by(|(_, pos)| pos.path);
+    for (_, g) in groups.into_iter() {
+        let mut last: Option<Entity> = None;
+
+        for (e, _) in g.sorted_by(|(_, a), (_, b)| Ord::cmp(a, b).reverse()) {
+            if let Some(leader) = last {
+                commands.entity(e).insert(Leader(leader));
+            }
+
+            last = Some(e);
+        }
+    }
+}
+
+pub fn compute_leaders_on_change(){
+    
 }

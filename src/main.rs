@@ -13,8 +13,7 @@ fn main() {
     .configure_set(Update, Stage::Rendering.after(Stage::Movement))
 
 
-    .add_systems(Startup, (setup_camera, add_vehicles).chain())
-
-    // .add_systems(Update, car_following.after(transform_update_system))
+    .add_systems(Startup, (setup_camera, add_vehicles))
+    // .add_systems(Update, compute_leaders)
     .run();
 }

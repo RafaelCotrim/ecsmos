@@ -1,6 +1,12 @@
 use bevy::prelude::*;
 
-use crate::{components::*, plugins::{route_pathing::components::{PathPosition, Route, PathVelocity}, car_following::components::{Leader, KraussVehicle}}};
+use crate::{
+    components::*,
+    plugins::{
+        car_following::components::KraussVehicle,
+        route_pathing::components::{PathPosition, PathVelocity, Route},
+    },
+};
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 pub enum Stage {
@@ -16,8 +22,7 @@ pub fn setup_camera(mut commands: Commands) {
 }
 
 pub fn add_vehicles(mut commands: Commands, asset_server: Res<AssetServer>) {
-
-    let leader = commands.spawn((
+    commands.spawn((
         Vehicle,
         KraussVehicle::default(),
         PathPosition {
@@ -32,9 +37,9 @@ pub fn add_vehicles(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: asset_server.load("sprites/red.png"),
             ..default()
         },
-    )).id();
+    ));
 
-     commands.spawn((
+    commands.spawn((
         Vehicle,
         KraussVehicle::default(),
         PathPosition {
@@ -49,27 +54,6 @@ pub fn add_vehicles(mut commands: Commands, asset_server: Res<AssetServer>) {
             texture: asset_server.load("sprites/green.png"),
             ..default()
         },
-        Leader(leader)
+        // Leader(leader)
     ));
 }
-
-// pub fn compute_leaders(
-//     mut commands: Commands,
-//     query: Query<(Entity, &PathPosition), With<Vehicle>>,
-// ) {
-//     let groups = query.iter().group_by(|(_, pos)| pos.path);
-
-//     for (_, g) in groups.into_iter() {
-//         let mut last: Option<Entity> = None;
-
-//         for (e, _) in g.sorted_by(|(_, a), (_, b)| Ord::cmp(a, b).reverse()) {
-//             if let Some(leader) = last {
-//                 commands.entity(e).insert(Leader(leader));
-//             }
-
-//             last = Some(e);
-//         }
-//     }
-// }
-
-// Update
