@@ -15,5 +15,3 @@ impl Default for Vehicle{
         Self { max_speed: 10.0, max_deceleration: 0.5, max_aceleration: 0.5, reaction_time: 10.0 }
     }
 }
-#[derive(Component)]
-pub struct Leader(pub Entity);

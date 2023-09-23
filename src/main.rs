@@ -1,11 +1,12 @@
 use bevy::prelude::*;
-use ecsmos::{systems::*, plugins::route_pathing::RoutePathingPlugin};
+use ecsmos::{systems::*, plugins::{route_pathing::RoutePathingPlugin, car_following::CarFollowingPlugin}};
 
 fn main() {
     App::new()
 
     .add_plugins(DefaultPlugins)
     .add_plugins(RoutePathingPlugin)
+    .add_plugins(CarFollowingPlugin)
     
     .configure_set(Update, Stage::Compute)
     .configure_set(Update, Stage::Movement.after(Stage::Compute))
