@@ -2,42 +2,72 @@ use bevy::prelude::*;
 
 use crate::components::Vehicle;
 
-use super::{resources::RoutingTable, components::*};
+use super::{components::*, resources::RoutingTable};
+
+
 
 pub fn route_movement_system(
     pathing: Res<RoutingTable>,
-    mut query: Query<(&mut PathPosition, &PathVelocity), With<Vehicle>>,
+    mut query: Query<(&mut PathPosition, &PathVelocity, &Route), With<Vehicle>>,
 ) {
-    for (mut pos, PathVelocity(dx)) in &mut query {
-        let path = pathing.paths.get(pos.path).unwrap();
-        let mut seg_id = pos.segment;
-        let (start, end) = path.segment(seg_id);
+    for (mut pos, PathVelocity(v), Route(route_id)) in &mut query {
+        
+        let route = pathing.routes.get(*route_id).unwrap();
 
-        let segment_legth = end.distance(start);
+        loop {
 
-        if pos.distance + dx <= segment_legth {
-            pos.distance += dx;
-            continue;
-        }
+            let path_idx = route.paths.get(pos.path).unwrap();
+            let path = pathing.paths.get(*path_idx).unwrap();
+            let mut dx = *v;
 
-        while path.segment_len() > seg_id + 1 {
-            seg_id += 1;
-            let (start, end) = path.segment(seg_id);
+            // Trivial case: The vehicle movement is cofined to 1 segment
 
-            let dx = dx - (segment_legth - pos.distance);
-            pos.distance = 0.;
+            let (start, end) = path.segment(pos.segment);
 
             let segment_legth = end.distance(start);
 
             if pos.distance + dx <= segment_legth {
                 pos.distance += dx;
-                pos.segment = seg_id;
-                return;
+                break;
+            }
+
+            // The vehicle movement goes past to another segment in the same path
+
+            while path.segment_len() > pos.segment + 1 {
+                pos.segment += 1;
+                let (start, end) = path.segment(pos.segment);
+
+                dx -= segment_legth - pos.distance;
+                pos.distance = 0.;
+
+                let segment_legth = end.distance(start);
+
+                if pos.distance + dx <= segment_legth {
+                    pos.distance += dx;
+                    dx -= dx;
+                    break;
+                }
+            }
+
+            if dx == 0.{
+                break;
+            }
+
+            // The vehicle goes past the end of one path and into another
+
+            if route.paths.len() > pos.path + 1{
+                pos.path += 1;
+                pos.segment = 0;
+                pos.distance = 0.;
+                let (start, end) = path.segment(pos.segment);
+                dx -= end.distance(start);
+            } else {
+                pos.path = 0;
+                pos.distance = 0.;
+                pos.segment = 0;
+                break;
             }
         }
-
-        pos.distance = 0.;
-        pos.segment = 0;
     }
 }
 
@@ -58,8 +88,14 @@ pub fn transform_update_system(
     }
 }
 
+const COLORS: &'static[Color] = &[Color::RED, Color::GREEN, Color::BLUE];
+
 pub fn draw_paths(pathing: Res<RoutingTable>, mut gizmos: Gizmos) {
+
+    let mut i = 0;
+
     for path in &pathing.paths {
-        gizmos.linestrip_2d(path.points.to_owned(), Color::RED);
+        gizmos.linestrip_2d(path.points.to_owned(), COLORS[i % COLORS.len()]);
+        i += 1;
     }
 }
