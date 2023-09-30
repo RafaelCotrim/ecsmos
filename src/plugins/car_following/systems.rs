@@ -53,7 +53,7 @@ pub fn car_following(
 
 pub fn compute_leaders_on_add(
     mut commands: Commands,
-    query: Query<(Entity, &PathPosition), (With<Vehicle>, Added<KraussVehicle>)>,
+    query: Query<(Entity, &PathPosition), (With<Vehicle>, Added<KraussVehicle>, Without<Leader>)>,
 ) {
     let groups = query.iter().group_by(|(_, pos)| pos.path);
     for (_, g) in groups.into_iter() {

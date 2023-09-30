@@ -30,7 +30,7 @@ pub fn add_vehicles(mut commands: Commands, asset_server: Res<AssetServer>) {
             path: 0,
             segment: 0,
         },
-        Route(1),
+        Route(0),
         PathVelocity(3.),
         SpriteBundle {
             transform: Transform::from_xyz(0., 0., 0.0),
@@ -47,13 +47,12 @@ pub fn add_vehicles(mut commands: Commands, asset_server: Res<AssetServer>) {
             path: 0,
             segment: 0,
         },
-        Route(1),
+        Route(0),
         PathVelocity(8.),
         SpriteBundle {
             transform: Transform::from_xyz(0., 0., 0.0),
             texture: asset_server.load("sprites/green.png"),
             ..default()
         },
-        // Leader(leader)
     ));
 }

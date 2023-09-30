@@ -2,23 +2,27 @@ use bevy::prelude::*;
 
 use crate::components::Vehicle;
 
-use super::{components::*, resources::RoutingTable};
+use super::{components::*, resources::RoutingTable, events::PathChangedEvent};
 
 
 
 pub fn route_movement_system(
     pathing: Res<RoutingTable>,
-    mut query: Query<(&mut PathPosition, &PathVelocity, &Route), With<Vehicle>>,
+    mut query: Query<(Entity,&mut PathPosition, &PathVelocity, &Route), With<Vehicle>>,
+    // mut commands: Commands,
+    mut ev_path_changed: EventWriter<PathChangedEvent>
 ) {
-    for (mut pos, PathVelocity(v), Route(route_id)) in &mut query {
+    for (entity, mut pos, PathVelocity(speed), Route(route_id)) in &mut query {
         
         let route = pathing.routes.get(*route_id).unwrap();
+        // let mut pos = PathPositionIntent::from(pos.as_ref());
+        let  old_pos = pos.clone();
 
         loop {
 
             let path_idx = route.paths.get(pos.path).unwrap();
             let path = pathing.paths.get(*path_idx).unwrap();
-            let mut dx = *v;
+            let mut dx = *speed;
 
             // Trivial case: The vehicle movement is cofined to 1 segment
 
@@ -68,6 +72,21 @@ pub fn route_movement_system(
                 break;
             }
         }
+    
+        if old_pos.path != pos.path {
+            ev_path_changed.send(PathChangedEvent { entity, preivous: old_pos.path, current: pos.path })
+        }
+
+        // commands.entity(entity).insert(pos);
+    }
+}
+
+pub fn apply_intent_system(mut query: Query<(Entity, &mut PathPosition, &PathPositionIntent), With<Vehicle>>, mut commands: Commands){
+    
+    for (entity, mut pos, intent) in &mut query{
+        intent.apply_to(&mut pos);
+
+        commands.entity(entity).remove::<PathPositionIntent>();
     }
 }
 

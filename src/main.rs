@@ -12,7 +12,6 @@ fn main() {
     .configure_set(Update, Stage::Movement.after(Stage::Compute))
     .configure_set(Update, Stage::Rendering.after(Stage::Movement))
 
-
     .add_systems(Startup, (setup_camera, add_vehicles))
     // .add_systems(Update, compute_leaders)
     .run();

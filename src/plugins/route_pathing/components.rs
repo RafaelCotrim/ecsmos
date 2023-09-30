@@ -5,7 +5,7 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct Route(pub usize);
 
-#[derive(Component)]
+#[derive(Component, Clone, Copy)]
 pub struct PathPosition { 
     pub distance: f32, 
     pub path: usize,
@@ -39,3 +39,26 @@ impl PartialEq for PathPosition {
 
 #[derive(Component)]
 pub struct PathVelocity(pub f32);
+
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct PathPositionIntent{
+    pub distance: f32, 
+    pub path: usize,
+    pub segment: usize,
+}
+
+impl PathPositionIntent {
+    pub fn apply_to(&self, pos: &mut PathPosition){
+        pos.path = self.path;
+        pos.segment = self.segment;
+        pos.distance = self.distance;
+    }
+    
+}
+
+impl From<&PathPosition> for PathPositionIntent {
+    fn from(value: &PathPosition) -> Self {
+        Self { distance:value.distance, path: value.path, segment: value.segment }
+    }
+}
