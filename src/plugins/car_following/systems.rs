@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use itertools::Itertools;
 
-use crate::{plugins::route_pathing::{resources::RoutingTable, components::*}, components::Vehicle};
+use crate::{plugins::route_pathing::{resources::RoutingTable, components::*, events::PathChangedEvent}, components::Vehicle};
 
 use super::components::{Leader, KraussVehicle};
 
@@ -53,7 +53,7 @@ pub fn car_following(
 
 pub fn compute_leaders_on_add(
     mut commands: Commands,
-    query: Query<(Entity, &PathPosition), (With<Vehicle>, Added<KraussVehicle>, Without<Leader>)>,
+    query: Query<(Entity, &PathPosition), (Added<KraussVehicle>, Without<Leader>)>,
 ) {
     let groups = query.iter().group_by(|(_, pos)| pos.path);
     for (_, g) in groups.into_iter() {
@@ -69,6 +69,34 @@ pub fn compute_leaders_on_add(
     }
 }
 
-pub fn compute_leaders_on_change(){
+pub fn compute_leaders_on_change(mut ev_levelup: EventReader<PathChangedEvent>,  
+    mut commands: Commands,
+    mut query: Query<(Entity, &PathPosition, Option<&mut Leader>), With<KraussVehicle>>){
     
+    if ev_levelup.iter().len() == 0{
+        return;
+    }
+
+    let groups = &mut query.iter().group_by(|(_, pos, _)| pos.path);
+    for (_, g) in groups.into_iter() {
+        let mut last: Option<Entity> = None;
+
+        for (e, _, leader) in g.sorted_by(|(_, a, _), (_, b, _)| Ord::cmp(a, b).reverse()) {
+            
+            match (last, leader) {
+                (Some(current), Some( preivous)) => {
+                    preivous.0 = current;
+                }
+                (_,Some(preivous)) => {}
+                (Some(preivous),_) => {}
+                (_,_) => {}
+            }
+
+            if let Some(leader) = last {
+                commands.entity(e).insert(Leader(leader));
+            }
+
+            last = Some(e);
+        }
+    }
 }
